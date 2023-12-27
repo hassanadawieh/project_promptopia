@@ -13,17 +13,17 @@ const PromptCardList = ({
 }) => {
   return (
     <div className="mt-16 prompt_layout">
-      {searchText.length > 0 ||
-        (tagSearched.length > 0 &&
+    {console.log(dataSearch , searchText.length > 0)}
+      {dataSearch.length > 0 &&
           dataSearch.map((post) => (
             <PromptCard
               key={post.id}
               post={post}
               handleTagClick={handleTagClick}
             />
-          )))}
-      {searchText.length === 0 &&
-        tagSearched.length === 0 &&
+          ))}
+      {searchText.length == 0 &&
+        tagSearched.length == 0 &&
         data.map((post) => (
           <PromptCard
             key={post.id}
@@ -40,9 +40,6 @@ const Feed = () => {
   const [tagSearched, setTagSearched] = useState("");
   const [dataSearch, setDataSearch] = useState([]);
   const [posts, setPosts] = useState([]);
-  const handleSearchChange = (e) => {
-    setSearchText(e.target.value);
-  };
 
   const handleTagClick = (tag) => {
     setTagSearched(tag);
@@ -50,22 +47,30 @@ const Feed = () => {
 
   useEffect(() => {
     if (searchText.length > 0) {
+      console.log(searchText);
       const filtration = posts.filter(
         (item) =>
           item.prompt.toLowerCase().startsWith(searchText.toLowerCase()) ||
           item.tag.toLowerCase().startsWith(`#${searchText.toLowerCase()}`) ||
-          item.creator.username
-            .toLowerCase()
-            .startsWith(searchText.toLowerCase())
+          item.creator.username.toLowerCase().startsWith(searchText.toLowerCase())
       );
+      console.log(filtration)
+      console.log(searchText.length)
       setDataSearch(filtration);
+      return;
     }
-    if (tagSearched.length > 0) {
-      const filtration = posts.filter((item) => item.tag == tagSearched);
-      console.log(filtration);
-      setDataSearch(filtration);
-    }
-  }, [searchText, tagSearched]);
+   if (tagSearched.length > 0) {
+     const filtration = posts.filter(
+       (item) => item.tag.toLowerCase() === tagSearched.toLowerCase()
+     );
+     setDataSearch(filtration);
+     return;
+   }
+     if (searchText.length === 0 && tagSearched.length === 0) {
+       setDataSearch(posts);
+       return;
+     }
+  }, [searchText, tagSearched , posts]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -84,7 +89,7 @@ const Feed = () => {
           type="text"
           placeholder="search for a tag or a username"
           value={searchText}
-          onChange={handleSearchChange}
+          onChange={(e) => setSearchText(e.target.value)}
           required
           className="search_input peer"
         />
