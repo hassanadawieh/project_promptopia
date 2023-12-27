@@ -52,9 +52,11 @@ const Feed = () => {
     if (searchText.length > 0) {
       const filtration = posts.filter(
         (item) =>
-          item.prompt.startsWith(searchText) ||
-          item.tag.startsWith(`#${searchText}`) ||
-          item.creator.username.startsWith(searchText)
+          item.prompt.toLowerCase().startsWith(searchText.toLowerCase()) ||
+          item.tag.toLowerCase().startsWith(`#${searchText.toLowerCase()}`) ||
+          item.creator.username
+            .toLowerCase()
+            .startsWith(searchText.toLowerCase())
       );
       setDataSearch(filtration);
     }
