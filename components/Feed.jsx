@@ -48,7 +48,7 @@ const Feed = () => {
   useEffect(() => {
     if (searchText.length > 0) {
       console.log(searchText);
-      const filtration = posts.filter(
+      const filtration = dataSearch.filter(
         (item) =>
           item.prompt.toLowerCase().startsWith(searchText.toLowerCase()) ||
           item.tag.toLowerCase().startsWith(`#${searchText.toLowerCase()}`) ||
@@ -60,27 +60,32 @@ const Feed = () => {
       return;
     }
    if (tagSearched.length > 0) {
-     const filtration = posts.filter(
+     const filtration = dataSearch.filter(
        (item) => item.tag.toLowerCase() === tagSearched.toLowerCase()
      );
      setDataSearch(filtration);
      return;
    }
      if (searchText.length === 0 && tagSearched.length === 0) {
-       setDataSearch(posts);
+       const fetchPosts = async () => {
+         const response = await fetch("/api/prompt");
+         const data = await response.json();
+         setDataSearch(data);
+       };
+       fetchPosts();
        return;
      }
-  }, [searchText, tagSearched , posts]);
+  }, [searchText, tagSearched]);  
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const response = await fetch("/api/prompt");
-      const data = await response.json();
-      setPosts(data);
-    };
+  // useEffect(() => {
+  //   const fetchPosts = async () => {
+  //     const response = await fetch("/api/prompt");
+  //     const data = await response.json();
+  //     setPosts(data);
+  //   };
 
-    fetchPosts();
-  }, []);
+  //   fetchPosts();
+  // }, []);
 
   return (
     <section className="feed">
