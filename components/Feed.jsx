@@ -4,130 +4,91 @@ import { useState, useEffect } from "react";
 
 import PromptCard from "./PromptCard";
 
-const PromptCardList = ({
-  data,
-  dataSearch,
-  handleTagClick,
-  searchText,
-  tagSearched,
-}) => {
+const PromptCardList = ({ data, handleTagClick }) => {
   return (
     <div className="mt-16 prompt_layout">
-    {console.log(dataSearch , searchText.length > 0)}
-      {dataSearch.length > 0 &&
-          dataSearch.map((post) => (
-            <PromptCard
-              key={post.id}
-              post={post}
-              handleTagClick={handleTagClick}
-            />
-          ))}
-      {searchText.length == 0 &&
-        tagSearched.length == 0 &&
-        data.map((post) => (
-          <PromptCard
-            key={post.id}
-            post={post}
-            handleTagClick={handleTagClick}
-          />
-        ))}
+      {data.map((post) => (
+        <PromptCard
+          key={post._id}
+          post={post}
+          handleTagClick={handleTagClick}
+        />
+      ))}
     </div>
   );
 };
 
 const Feed = () => {
-  const [searchText, setSearchText] = useState("");
-  const [tagSearched, setTagSearched] = useState("");
-  const [dataSearch, setDataSearch] = useState([]);
-  const [posts, setPosts] = useState([]);
+  const [allPosts, setAllPosts] = useState([]);
 
-  const handleTagClick = (tag) => {
-    setTagSearched(tag);
+  // Search states
+  const [searchText, setSearchText] = useState("");
+  const [searchTimeout, setSearchTimeout] = useState(null);
+  const [searchedResults, setSearchedResults] = useState([]);
+
+  const fetchPosts = async () => {
+    const response = await fetch("/api/prompt");
+    const data = await response.json();
+
+    setAllPosts(data);
   };
 
   useEffect(() => {
-    if (searchText.length > 0) {
-      console.log(searchText);
-      const filtration = dataSearch.filter(
-        (item) =>
-          item.prompt.toLowerCase().startsWith(searchText.toLowerCase()) ||
-          item.tag.toLowerCase().startsWith(`#${searchText.toLowerCase()}`) ||
-          item.creator.username.toLowerCase().startsWith(searchText.toLowerCase())
-      );
-      console.log(filtration)
-      console.log(searchText.length)
-      setDataSearch(filtration);
-      return;
-    }
-   if (tagSearched.length > 0) {
-     const filtration = dataSearch.filter(
-       (item) => item.tag.toLowerCase() === tagSearched.toLowerCase()
-     );
-     setDataSearch(filtration);
-     return;
-   }
-     if (searchText.length === 0 && tagSearched.length === 0) {
-       const fetchPosts = async () => {
-         const response = await fetch("/api/prompt");
-         const data = await response.json();
-         setDataSearch(data);
-       };
-       fetchPosts();
-       return;
-     }
-  }, [searchText, tagSearched]);  
+    fetchPosts();
+  }, []);
 
-  // useEffect(() => {
-  //   const fetchPosts = async () => {
-  //     const response = await fetch("/api/prompt");
-  //     const data = await response.json();
-  //     setPosts(data);
-  //   };
+  const filterPrompts = (searchtext) => {
+    const regex = new RegExp(searchtext, "i"); // 'i' flag for case-insensitive search
+    return allPosts.filter(
+      (item) =>
+        regex.test(item.creator.username) ||
+        regex.test(item.tag) ||
+        regex.test(item.prompt)
+    );
+  };
 
-  //   fetchPosts();
-  // }, []);
+  const handleSearchChange = (e) => {
+    clearTimeout(searchTimeout);
+    setSearchText(e.target.value);
+
+    // debounce method
+    setSearchTimeout(
+      setTimeout(() => {
+        const searchResult = filterPrompts(e.target.value);
+        setSearchedResults(searchResult);
+      }, 500)
+    );
+  };
+
+  const handleTagClick = (tagName) => {
+    setSearchText(tagName);
+
+    const searchResult = filterPrompts(tagName);
+    setSearchedResults(searchResult);
+  };
 
   return (
     <section className="feed">
       <form className="relative w-full flex-center">
         <input
           type="text"
-          placeholder="search for a tag or a username"
+          placeholder="Search for a tag or a username"
           value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
+          onChange={handleSearchChange}
           required
           className="search_input peer"
         />
       </form>
-      {tagSearched.length > 0 && (
-        <div className="">
-          <div className="bg-cyan-600 py-1 px-4 text-gray-50 rounded-full relative  ">
-            <div
-              className="
-        absolute top-[-5px] 
-        right-[-10px] 
-        bg-gray-300  
-        px-2 
-        rounded-full 
-        text-center 
-        text-cyan-600 
-        cursor-pointer"
-              onClick={() => setTagSearched("")}
-            >
-              x
-            </div>
-            <p>{tagSearched}</p>
-          </div>
-        </div>
-      )}
 
-      <PromptCardList
-        data={posts}
-        dataSearch={dataSearch}
-        handleTagClick={handleTagClick}
-        searchText={searchText}
-        tagSearched={tagSearched}
-      />
+      {/* All Prompts */}
+      {searchText ? (
+        <PromptCardList
+          data={searchedResults}
+          handleTagClick={handleTagClick}
+        />
+      ) : (
+        <PromptCardList data={allPosts} handleTagClick={handleTagClick} />
+      )}
     </section>
   );
 };
