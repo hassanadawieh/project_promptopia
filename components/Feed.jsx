@@ -27,7 +27,12 @@ const Feed = () => {
   const [searchedResults, setSearchedResults] = useState([]);
 
   const fetchPosts = async () => {
-    const response = await fetch("/api/prompt");
+    const response = await fetch("/api/prompt", {
+      headers: {
+        cache : "no-cache",
+      }
+
+    });
     const data = await response.json();
 
     setAllPosts(data);
@@ -79,7 +84,6 @@ const Feed = () => {
           className="search_input peer"
         />
       </form>
-
       {/* All Prompts */}
       {searchText ? (
         <PromptCardList
@@ -94,3 +98,4 @@ const Feed = () => {
 };
 
 export default Feed;
+export const revalidate = 0;
