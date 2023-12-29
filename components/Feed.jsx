@@ -27,12 +27,7 @@ const Feed = () => {
   const [searchedResults, setSearchedResults] = useState([]);
 
   const fetchPosts = async () => {
-    const response = await fetch("/api/prompt", {
-      headers: {
-        cache : "no-cache",
-      }
-
-    });
+    const response = await fetch("/api/prompt");
     const data = await response.json();
 
     setAllPosts(data);
@@ -98,4 +93,4 @@ const Feed = () => {
 };
 
 export default Feed;
-export const revalidate = 0;
+

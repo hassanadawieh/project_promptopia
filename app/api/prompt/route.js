@@ -16,3 +16,6 @@ export const GET = async (req) => {
     return new Response("Failed to fetch all prompts", { status: 500 });
   }
 };
+
+export const revalidate = 0;
+
